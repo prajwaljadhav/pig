@@ -1,0 +1,59 @@
+
+1. Download Apache Pig in hduser home directory.
+https://mirrors.estointernet.in/apache/pig/pig-0.16.0/pig-0.16.0.tar.gz
+
+2. extract the tar file.
+tar -xvf pig-0.16.0.tar.gz 
+
+wget https://downloads.apache.org/pig/pig-0.17.0/pig-0.17.0.tar.gz
+tar -xzvf pig-0.17.0.tar.gz
+sudo mv pig-0.17.0 /usr/local/pig
+export PIG_HOME=/usr/local/pig
+export PATH=$PATH:$PIG_HOME/bin
+source ~/.bashrc
+start-dfs.sh
+start-yarn.sh
+echo -e "Hello Hadoop\nHello World\nHello Hadoop Hello" > input.txt
+hdfs dfs -mkdir -p /user/hadoopuser/input
+hdfs dfs -put input.txt /user/hadoopuser/input/
+
+
+wordcount.pig
+-- Load the input data
+lines = LOAD '/user/hadoopuser/input/input.txt' AS (line:chararray);
+
+-- Split each line into words
+words = FOREACH lines GENERATE FLATTEN(TOKENIZE(line)) AS word;
+
+-- Group the words
+word_groups = GROUP words BY word;
+
+-- Count the occurrences of each word
+word_counts = FOREACH word_groups GENERATE group AS word, COUNT(words) AS count;
+
+-- Store the results
+STORE word_counts INTO '/user/hadoopuser/output';
+
+pig -x local wordcount.pig
+hdfs dfs -cat /user/hadoopuser/output/part-r-00000
+(Hello,4)
+(Hadoop,2)
+(World,1)
+
+
+3. Open the bashrc file 
+
+sudo nano ~/.bashrc  
+
+add the following Pig environment variables.
+
+export PIG_HOME=/home/hduser/pig-0.16.0  
+export PATH=$PATH:$PIG_HOME/bin 
+
+Save the file.
+
+4. Update shell environment
+ source ~/.bashrc  
+
+5. Check Pig
+ source ~/.bashrc  
